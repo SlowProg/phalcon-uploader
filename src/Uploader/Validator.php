@@ -40,8 +40,8 @@ class Validator
         // check
 
         if ($file->getSize() < (int) $value) {
-
-            $this->errors[] = sprintf(Message::get('INVALID_MIN_SIZE'), $file->getName(), Format::bytes($value));
+            $this->addError($file->getName(), sprintf(Message::get('INVALID_MIN_SIZE'), $file->getName(), Format::bytes($value)));
+            
             return false;
         }
 
@@ -66,8 +66,8 @@ class Validator
         // check
 
         if ($file->getSize() > (int) $value) {
-
-            $this->errors[] = sprintf(Message::get('INVALID_MAX_SIZE'), $file->getName(), Format::bytes($value));
+            $this->addError($file->getName(), sprintf(Message::get('INVALID_MAX_SIZE'), $file->getName(), Format::bytes($value)));
+            
             return false;
         }
 
@@ -92,8 +92,7 @@ class Validator
         // check
 
         if (in_array(strtolower($file->getExtension()), $value) === false) {
-
-            $this->errors[] = sprintf(Message::get('INVALID_EXTENSION'), $file->getName(), implode(',', $value));
+			$this->addError($file->getName(), sprintf(Message::get('INVALID_EXTENSION'), $file->getName(), implode(',', $value)));
 
             return false;
         }
@@ -117,8 +116,7 @@ class Validator
         }
 
         if (in_array($file->getRealType(), $value) === false) {
-
-            $this->errors[] = sprintf(Message::get('INVALID_MIME_TYPES'), $file->getName(), implode(',', $value));
+			$this->addError($file->getName(), sprintf(Message::get('INVALID_MIME_TYPES'), $file->getName(), implode(',', $value)));
 
             return false;
         }
@@ -143,14 +141,14 @@ class Validator
         }
 
         if (file_exists($value) === false) {
-
-            $this->errors[] = sprintf(Message::get('INVALID_UPLOAD_DIR'), $value);
+			$this->addError($file->getName(), sprintf(Message::get('INVALID_UPLOAD_DIR'), $value));
+			
             return false;
         }
 
         if (is_writable($value) === false) {
+			$this->addError($file->getName(), sprintf(Message::get('INVALID_PERMISSION_DIR'), $value));
 
-            $this->errors[] = sprintf(Message::get('INVALID_PERMISSION_DIR'), $value);
             return false;
         }
 
@@ -174,5 +172,17 @@ class Validator
         }
 
         return true;
+    }
+
+    /**
+     * Add message to an array of errors
+     *
+     * @param string $filename
+     * @param string $message
+     */
+    private function addError($filename, $message)
+    {
+	    settype($this->errors[$filename], 'array'); // if it's null
+	    array_push($this->errors[$filename], $message);
     }
 }
